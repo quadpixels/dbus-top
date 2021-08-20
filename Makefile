@@ -1,23 +1,12 @@
-all: dbus-top
+dbus-top: analyzer.o dbus_capture.o main.o menu.o sensorhelper.o views.o xmlparse.o
+	g++ $^ -lsystemd -lncurses -lfmt -lpthread -I. -std=c++17 -g -O0 -o $@
 
-# Edit the following two lines for use with BMC
-S=$(HOME)/oecore-x86_64/environment-setup-armv7a-openbmc-linux-gnueabi
-BMC_SYS_ROOT="$(HOME)/oecore-x86_64/sysroots/armv7a-openbmc-linux-gnueabi"
-
-BMC_INCS=-I$(BMC_SYS_ROOT)/usr/include/
-BMC_LIBS=-lsystemd -lncurses
-
-CFLAGS=-std=c++17 -lsystemd -lpthread -lncurses
-CFLAGS_BMC=--sysroot=$(BMC_SYS_ROOT) -march=armv7-a -std=gnu++17  -lsystemd -lpthread -lncurses
-
-dbus-top: main.cpp
-	g++ main.cpp -std=c++17 $(CFLAGS) -O2 -o $@
-
-dbus-top_bmc: main.cpp
-	@source $(S) && \
-	 arm-openbmc-linux-gnueabi-g++ $(CFLAGS_BMC) $(BMC_INCS) $^ $(BMC_LIBS) -o $@ -O2
-
+%.o: %.cpp
+	g++ $< -c -o $@ -std=c++17 -I.
 
 clean:
-	@if [ -f dbus-top     ]; then rm -v dbus-top    ; fi
-	@if [ -f dbus-top_bmc ]; then rm -v dbus-top_bmc; fi
+	@for x in dbus-top analyzer.o dbus_capture.o main.o menu.o sensorhelper.o views.o xmlparse.o; do\
+		if [ -f $$x ]; then   \
+			rm -v $$x;  \
+		fi                   \
+	done	
